@@ -1,0 +1,7 @@
+# .gitignore
+.aws/
+.env
+venv/
+os
+pd
+strawberry
