@@ -37,6 +37,24 @@ class SponsorDebitSummary:
     sumOfDebits: float
 
 @strawberry.type
+class StudyDebitSummary:
+    sponsor_id: str
+    sponsor_name: str
+    client_id: str
+    display_name: str
+    study_id: str
+    study_name: str
+    parent_site_number: str
+    parent_legal_name: str
+    iso_code: str
+    country: str
+    sumOfDebits: float
+
+@strawberry.input
+class StudyList:
+    study_id_list: list[str]
+
+@strawberry.type
 class Query:
     @strawberry.field
     async def debits_from_s3(self) -> list[Debit]:
@@ -74,6 +92,46 @@ class Query:
                 )
             )
         return debits_list
+
+    @strawberry.field
+    async def debitsByStudies(self, studies : StudyList) -> list[StudyDebitSummary]:
+        # Create a Boto3 session for s3
+        session = boto3.Session(profile_name=aws_profile, region_name=aws_region)
+        s3_client = session.client('s3')
+        
+        # Get the Parquet file object from S3
+        s3_object = s3_client.get_object(
+            Bucket=debits_bucket_name,
+            Key=debits_file_key
+        )
+        
+        # Read parquet bytes into pandas df
+        parquet_bytes = s3_object['Body'].read()
+        df = pd.read_parquet(io.BytesIO(parquet_bytes))
+
+        # Group by 'sponsorName' and sum 'totalDebits'
+        aggregated_debits_df = df.groupby('study_id')['total_debits'].sum().reset_index()
+        
+        # extract list of debits
+        debits_list = []
+        for index, row in df.iterrows():
+            debits_list.append(
+                StudyDebitSummary(
+                    sponsor_id=row['sponsor_id'],
+                    sponsor_name=row['sponsor_name'],
+                    client_id=row['client_id'],
+                    display_name=row['display_name'],
+                    study_id=row['study_id'],
+                    study_name=row['study_name'],
+                    parent_site_number=row['parent_site_number'],
+                    parent_legal_name=row['parent_legal_name'],
+                    iso_code=row['iso_code'],
+                    country=row['country'],
+                    sumOfDebits=row['total_debits']
+                )
+            )
+        return debits_list
+
     @strawberry.field
     async def debitSummaryBySponsor(self) -> list[SponsorDebitSummary]:
         session = boto3.Session(profile_name=aws_profile, region_name=aws_region)
