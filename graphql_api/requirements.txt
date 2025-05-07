@@ -1,6 +1,5 @@
-strawberry
+strawberry-graphql[fastapi]
 FastAPI
 boto3
 pandas
 pyarrow
-dotenv
