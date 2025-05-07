@@ -1,0 +1,6 @@
+strawberry
+FastAPI
+boto3
+pandas
+pyarrow
+dotenv
