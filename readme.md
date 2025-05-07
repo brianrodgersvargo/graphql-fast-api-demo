@@ -61,6 +61,6 @@ This application is set up to use an AWS SSO profile for authenticating with AWS
 +   Create a .env file in the /graphql_api directory
 +   list the following in your .env file:
     ```
-        AWS_PROFILE=<profile in config>
-        AWS_REGION=<your region>
+    AWS_PROFILE=<profile in config>
+    AWS_REGION=<your region>
     ```
