@@ -5,3 +5,4 @@ venv/
 os
 pd
 strawberry
+boto3
